@@ -22,6 +22,7 @@ module.exports = function (RED) {
     function OdooXMLRPCExecNode(config) {
         RED.nodes.createNode(this, config);
         this.host = RED.nodes.getNode(config.host);
+        this.errorlength = this.host.errorlength;
         var node = this;
 
         node.on('input', function (msg, send, done) {
@@ -30,7 +31,7 @@ module.exports = function (RED) {
 
             this.host.connect(function(err, odoo_inst) {
                 if (err) {
-                    return handle_error(err, node, done);
+                    return handle_error(err, node, msg, done);
                 }
 
                 var method = config.method;
@@ -53,7 +54,7 @@ module.exports = function (RED) {
 
                 odoo_inst.execute_kw(config.model, method, params, function (err, value) {
                     if (err) {
-                        return handle_error(err, node, done);
+                        return handle_error(err, node, msg, done);
                     }
 
                     msg.payload = value;

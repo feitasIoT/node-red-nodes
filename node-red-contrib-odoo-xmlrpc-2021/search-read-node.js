@@ -7,30 +7,30 @@ function isUInt(v){
 }
 
 module.exports = function (RED) {
-    var handle_error = function(err, node, fromOdoo=false) {
-      // err.message如果超过200个字符，截取最后100个字符
-        var short_message = err.message.length > 200 ? err.message.substring(err.message.length - 100) : err.message;
+    var handle_error = function(err, node, msg, fromOdoo=false) {
+        var short_message = err.message.length > node.errorlength ? err.message.substring(err.message.length - node.errorlength) : err.message;
         node.log(err.body);
         node.status({fill: "red", shape: "dot", text: fromOdoo ? "Odoo server error" : short_message});
-        node.error(short_message, err.message);
+        node.error(short_message, msg);
     };
 
     function OdooXMLRPCSearchReadNode(config) {
         RED.nodes.createNode(this, config);
         this.host = RED.nodes.getNode(config.host);
+        this.errorlength = this.host.errorlength;
         var node = this;
 
         node.on('input', function (msg) {
             node.status({});
             this.host.connect(function(err, odoo_inst) {
                 if (err) {
-                    return handle_error(err, node);
+                    return handle_error(err, node, msg);
                 }
 
                 var inParams;
                 if (msg.filters){
                   if (!Array.isArray(msg.filters)){
-                    return handle_error(new Error('When filters is provided, it must be an array'), node);
+                    return handle_error(new Error('When filters is provided, it must be an array'), node, msg);
                   }
                   inParams = msg.filters;
                 } else {
@@ -43,18 +43,18 @@ module.exports = function (RED) {
                 var fields = msg.fields;
                 if (isDefinedValue(fields)){
                   if (!Array.isArray(fields)){
-                    return handle_error(new Error('When fields is provided, it must be an array'), node);
+                    return handle_error(new Error('When fields is provided, it must be an array'), node, msg);
                   } else {
                     inParams.push(fields);
                   }
                 } else {
-                  return handle_error(new Error('fields required!'), node);
+                  return handle_error(new Error('fields required!'), node, msg);
                 }
                  
                 var offset = msg.offset;
                 if (isDefinedValue(offset)){
                   if (!isUInt(offset)){
-                    return handle_error(new Error('When offset is provided, it must be a positive integer number'), node);
+                    return handle_error(new Error('When offset is provided, it must be a positive integer number'), node, msg);
                   } else {
                     inParams.push(offset);
                   }
@@ -62,7 +62,7 @@ module.exports = function (RED) {
                 var limit = msg.limit;
                 if (isDefinedValue(limit)){
                   if (!isUInt(limit)){
-                    return handle_error(new Error('When limit is provided, it must be a positive integer number'), node);
+                    return handle_error(new Error('When limit is provided, it must be a positive integer number'), node, msg);
                   } else {
                     inParams.push(limit);
                   }
@@ -71,7 +71,7 @@ module.exports = function (RED) {
                 var order = msg.order;
                 if (isDefinedValue(order)){
                   if (typeof order !== 'string'){
-                    return handle_error(new Error('When order is provided, it must be a string'), node);
+                    return handle_error(new Error('When order is provided, it must be a string'), node, msg);
                   } else {
                     inParams.push(order);
                   }
@@ -80,7 +80,7 @@ module.exports = function (RED) {
                 // domain=None, fields=None, offset=0, limit=None, order=None
                 odoo_inst.execute_kw(config.model, 'search_read', params, function (err, value) {
                     if (err) {
-                        return handle_error(err, node, true);
+                        return handle_error(err, node, msg, true);
                     }
 
                     msg.payload = value;

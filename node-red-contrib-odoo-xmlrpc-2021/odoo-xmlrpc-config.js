@@ -6,6 +6,7 @@ module.exports = function (RED) {
         this.db = n.db;
         this.username = n.username;
         this.password = n.password;
+        this.errorlength = n.errorlength;
 
         this.connect = function(callback) {
             var Odoo = require('odoo-xmlrpc');

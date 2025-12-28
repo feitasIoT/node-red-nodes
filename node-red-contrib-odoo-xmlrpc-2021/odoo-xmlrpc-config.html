@@ -7,6 +7,7 @@
             db: {value: "", required: true},
             username: {value: "", required: true},
             password: {value: "", required: true},
+            errorlength: {value: 100, required: false}
         },
         label: function () {
             if (this.name) {
@@ -38,5 +39,9 @@
     <div class="form-row">
         <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
         <input type="password" id="node-config-input-password">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-errorlength"><i class="fa fa-warning"></i> Error message length</label>
+        <input type="number" id="node-config-input-errorlength">
     </div>
 </script>
