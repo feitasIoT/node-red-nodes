@@ -37,8 +37,6 @@ module.exports = function (RED) {
                   inParams = [];
                   inParams.push([]);
                 }
-                var params = [];
-                params.push(inParams); // domain
 
                 var fields = msg.fields;
                 if (isDefinedValue(fields)){
@@ -76,6 +74,10 @@ module.exports = function (RED) {
                     inParams.push(order);
                   }
                 }
+
+                var params = [];
+                params.push(inParams); // domain
+                
                 //node.log('Search-reading for model "' + config.model + '"...');
                 // domain=None, fields=None, offset=0, limit=None, order=None
                 odoo_inst.execute_kw(config.model, 'search_read', params, function (err, value) {
