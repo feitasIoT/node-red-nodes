@@ -26,3 +26,5 @@ msg.fields = (['name', 'fiscalcode']);
 ### update
 
 msg.payload = [[id1，id2，id3]， {"field_name1": "new value1"}]
+
+msg.payload = {"id": 1, "field_name1": "new value1"}
