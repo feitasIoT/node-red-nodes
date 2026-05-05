@@ -6,6 +6,10 @@ module.exports = function (RED) {
         node.error(short_message, msg);
     };
 
+    function isPlainObject(v) {
+        return v !== null && typeof v === "object" && !Array.isArray(v);
+    }
+
     function OdooXMLRPCUpdateNode(config) {
         RED.nodes.createNode(this, config);
         this.host = RED.nodes.getNode(config.host);
@@ -21,10 +25,24 @@ module.exports = function (RED) {
 
                 var inParams;
                 if (msg.payload){
-                  if (!Array.isArray(msg.payload)){
-                    return handle_error(new Error('when defined, msg.payload must be an array'), node, msg);
+                  if (Array.isArray(msg.payload)){
+                    inParams = msg.payload;
+                  } else if (isPlainObject(msg.payload)) {
+                    if (!Object.prototype.hasOwnProperty.call(msg.payload, "id")) {
+                      return handle_error(new Error('when msg.payload is an object, it must contain an "id" field'), node, msg);
+                    }
+
+                    var id = msg.payload.id;
+                    if (!(typeof id === "number" || (typeof id === "string" && id !== ""))) {
+                      return handle_error(new Error('msg.payload.id must be a number or non-empty string'), node, msg);
+                    }
+
+                    var values = Object.assign({}, msg.payload);
+                    delete values.id;
+                    inParams = [[id], values];
+                  } else {
+                    return handle_error(new Error('when defined, msg.payload must be an array or an object'), node, msg);
                   }
-                  inParams = msg.payload
                 } else {
                   inParams = [];
                   inParams.push([]);
