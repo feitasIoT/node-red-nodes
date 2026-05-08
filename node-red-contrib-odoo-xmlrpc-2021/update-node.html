@@ -5,6 +5,7 @@
             name: { value: "" },
             host: { value: "", type: "odoo-config" },
             model: { value: "", required: true },
+            payloadSource: { value: "payload", required: false },
             filter: { value: "", required: false },
             offset: {value: 0, required: false },
             limit: {value: 100, required: false }
@@ -31,6 +32,10 @@
      <div class="form-row">
          <label for="node-input-model"><i class="icon-"></i> Model</label>
          <input type="text" id="node-input-model">
+     </div>
+     <div class="form-row">
+         <label for="node-input-payloadSource"><i class="icon-tag"></i> Payload Source</label>
+         <input type="text" id="node-input-payloadSource" placeholder="payload (or values / msg.values)">
      </div>
 </script>
 

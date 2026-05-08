@@ -10,6 +10,17 @@ module.exports = function (RED) {
         return v !== null && typeof v === "object" && !Array.isArray(v);
     }
 
+    function getMessageProperty(msg, path) {
+        if (!path) return undefined;
+        if (path.startsWith("msg.")) {
+            path = path.slice(4);
+        }
+        if (RED && RED.util && typeof RED.util.getMessageProperty === "function") {
+            return RED.util.getMessageProperty(msg, path);
+        }
+        return path.split(".").reduce((acc, key) => (acc == null ? undefined : acc[key]), msg);
+    }
+
     function OdooXMLRPCUpdateNode(config) {
         RED.nodes.createNode(this, config);
         this.host = RED.nodes.getNode(config.host);
@@ -21,6 +32,15 @@ module.exports = function (RED) {
             this.host.connect(function(err, odoo_inst) {
                 if (err) {
                     return handle_error(err, node, msg);
+                }
+
+                var payloadSource = (config.payloadSource || "payload").toString().trim();
+                if (payloadSource && payloadSource !== "payload" && payloadSource !== "msg.payload") {
+                    var srcVal = getMessageProperty(msg, payloadSource);
+                    if (typeof srcVal === "undefined") {
+                        return handle_error(new Error('Cannot find payload source: ' + payloadSource), node, msg);
+                    }
+                    msg.payload = srcVal;
                 }
 
                 var inParams;

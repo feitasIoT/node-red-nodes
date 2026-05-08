@@ -3,7 +3,7 @@
   "version": "0.10.0",
   "description": "Odoo XMLRPC API client nodes for Node-RED",
   "dependencies": {
-    "odoo-xmlrpc": "git+https://github.com/faisalsami/odoo-xmlrpc.git"
+    "odoo-xmlrpc": "^1.0.8"
   },
   "repository": {
     "type": "git",
