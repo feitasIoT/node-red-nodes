@@ -1,0 +1,39 @@
+{
+    "smb": {
+        "label": {
+            "name": "Name",
+            "share": "Share",
+            "domain": "Domain",
+            "username": "Username",
+            "password": "Password",
+            "config": "Config",
+            "operation": "Operation",
+            "path": "Path",
+            "path-new": "New path",
+            "format": "Output"
+        },
+        "placeholder": {
+            "share": "\\\\address\\share",
+            "domain": "domain.local",
+            "username": "username",
+            "password": "password",
+            "path": "some\\path",
+            "path-new": "another\\new\\path"
+        },
+        "operation": {
+            "read-dir": "Read directory",
+            "read-file": "Read file",
+            "unlink": "Remove file",
+            "rename": "Rename / Move file",
+            "create": "Create file",
+            "mkdir": "Create directory",
+            "rmdir": "Remove directory",
+            "exists": "Exists",
+            "ensure-dir": "Ensure dir"
+        },
+        "format": {
+            "string": "a UTF-8 String",
+            "binary": "a binary Buffer"
+        }
+    }
+}

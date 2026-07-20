@@ -1,6 +1,6 @@
 {
   "name": "@feitas/node-red-odoo",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Odoo XMLRPC API client nodes for Node-RED",
   "dependencies": {
     "odoo-xmlrpc": "^1.0.8"
@@ -15,10 +15,10 @@
     "xmlrpc"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=16.0.0"
   },
   "node-red": {
-    "version": ">=4.0.0",
+    "version": ">=3.1.3",
     "nodes": {
       "odoo-config": "odoo-xmlrpc-config.js",
       "odoo-read": "read-node.js",
