@@ -1,0 +1,154 @@
+<script type="text/javascript">
+  RED.nodes.registerType('ssh-dynamic', {
+    category: 'network',
+    inputs: 1,
+    outputs: 1,
+    color: '#D8BFD8',
+    icon: 'font-awesome/fa-terminal',
+    paletteLabel: 'ssh-dynamic',
+
+    defaults: {
+      name: {
+        value: '',
+        required: false
+      }
+    },
+
+    inputLabels: 'command via msg.payload',
+    outputLabels: 'ssh response',
+
+    label: function () {
+      return this.name ? this.name : 'ssh-dynamic';
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="ssh-dynamic">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="ssh-dynamic">
+  </div>
+  <div class="form-tips" style="margin-top: 12px; padding: 10px; background: #f5f5f5; border-radius: 4px; color: #666;">
+    <p style="margin:0;"><b>All SSH connection parameters come from <code>msg</code>.</b>
+    No static host/port/username/password configuration needed.</p>
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="ssh-dynamic">
+  <h2>ssh-dynamic</h2>
+  <p>
+    A dynamic SSH client node for Node-RED. <b>All connection parameters
+    are read from <code>msg</code></b> — nothing is hardcoded in the node
+    configuration. This makes it easy to connect to different servers at runtime.
+  </p>
+  <p>
+    The node maintains a persistent interactive SSH shell session. Each incoming
+    message writes <code>msg.payload</code> to the shell's stdin, and shell output
+    is sent back as output messages.
+  </p>
+
+  <h3>WebSocket terminal mode (msg._client)</h3>
+  <p>
+    When <code>msg._client</code> is present (from a <code>websocket-in</code> node),
+    the node uses it as the session key. <b>The first message from each client must
+    carry <code>msg.host</code>, <code>msg.username</code>, and <code>msg.password</code>.</b>
+    All subsequent messages from that client only need <code>msg.payload</code>
+    — credentials are cached and the SSH session is reused automatically.
+  </p>
+  <p>
+    Multiple browser tabs each get their own <code>msg._client</code>, so they can
+    connect to different hosts simultaneously through a single node instance.
+  </p>
+
+  <h3>Input — msg properties</h3>
+  <dl class="message-properties">
+    <dt>msg._client <span class="property-type">string</span></dt>
+    <dd>WebSocket client ID (auto-set by <code>websocket-in</code>).
+    When present, this is the session binding key.</dd>
+  </dl>
+  <dl class="message-properties">
+    <dt>msg.host <span class="property-type">string</span></dt>
+    <dd><b>Required on first message per session.</b> SSH server hostname or IP address.</dd>
+  </dl>
+  <dl class="message-properties">
+    <dt>msg.port <span class="property-type">number</span></dt>
+    <dd>SSH port. Defaults to <code>22</code>.</dd>
+  </dl>
+  <dl class="message-properties">
+    <dt>msg.username <span class="property-type">string</span></dt>
+    <dd><b>Required on first message per session.</b> SSH login username.</dd>
+  </dl>
+  <dl class="message-properties">
+    <dt>msg.password <span class="property-type">string</span></dt>
+    <dd><b>Required on first message per session.</b> SSH login password.</dd>
+  </dl>
+  <dl class="message-properties">
+    <dt>msg.payload <span class="property-type">string | buffer</span></dt>
+    <dd>
+      Data to send to the remote shell. Typically a command followed by
+      newline, e.g. <code>"ls -la\n"</code>.
+    </dd>
+  </dl>
+
+  <h3>Output — msg properties</h3>
+  <dl class="message-properties">
+    <dt>msg.payload <span class="property-type">buffer</span></dt>
+    <dd>Data received from the SSH server (stdout).</dd>
+  </dl>
+  <dl class="message-properties">
+    <dt>msg.host <span class="property-type">string</span></dt>
+    <dd>The host this output came from.</dd>
+  </dl>
+  <dl class="message-properties">
+    <dt>msg.stderr <span class="property-type">boolean</span></dt>
+    <dd>Present and <code>true</code> when the data came from stderr.</dd>
+  </dl>
+
+  <h3>Connection reuse</h3>
+  <p>
+    The node keeps the SSH connection open between messages. If the next
+    message has the <b>same</b> <code>host</code>, <code>port</code> and
+    <code>username</code>, the existing session is reused (preserving shell
+    state like working directory and environment variables).
+  </p>
+  <p>
+    When <code>host</code>, <code>port</code>, or <code>username</code>
+    change, the old connection is closed and a new one is opened automatically.
+  </p>
+
+  <h3>Example — websocket terminal</h3>
+  <p>Flow: <code>websocket-in → function → ssh-dynamic → websocket-out</code></p>
+  <pre style="background:#eee;padding:8px;border-radius:4px;">
+// Function node — set credentials on first message per client
+const clientId = msg._client;
+const credsKey = "ssh:" + clientId;
+let creds = flow.get(credsKey);
+
+if (!creds) {
+    // First message — expect credentials from somewhere
+    // (e.g. URL params, HTTP request, or hardcoded)
+    creds = {
+        host: msg.host || "192.168.1.100",
+        port: msg.port || 22,
+        username: msg.username || "admin",
+        password: msg.password || "secret"
+    };
+    flow.set(credsKey, creds);
+}
+
+msg.host = creds.host;
+msg.port = creds.port;
+msg.username = creds.username;
+msg.password = creds.password;
+// msg.payload and msg._client pass through unchanged
+return msg;</pre>
+
+  <h3>Example — inject node test (no _client)</h3>
+  <pre style="background:#eee;padding:8px;border-radius:4px;">
+msg.host = "192.168.1.100";
+msg.port = 22;
+msg.username = "admin";
+msg.password = "secret";
+msg.payload = "uname -a\n";
+return msg;</pre>
+</script>

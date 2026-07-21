@@ -1,0 +1,26 @@
+{
+  "name": "@feitas/node-red-ssh-dynamic",
+  "version": "0.1.0",
+  "description": "A Node-RED SSH node that accepts all connection parameters (host, port, username, password) dynamically from msg object",
+  "keywords": [
+    "node-red",
+    "ssh",
+    "dynamic",
+    "ssh-client"
+  ],
+  "license": "MIT",
+  "author": "",
+  "node-red": {
+    "version": ">=3.0.0",
+    "nodes": {
+      "ssh-dynamic": "ssh-dynamic/ssh-dynamic.js"
+    }
+  },
+  "dependencies": {
+    "ssh2": "^1.15.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
