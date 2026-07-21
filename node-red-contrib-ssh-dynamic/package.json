@@ -1,6 +1,6 @@
 {
   "name": "@feitas/node-red-ssh-dynamic",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A Node-RED SSH node that accepts all connection parameters (host, port, username, password) dynamically from msg object",
   "keywords": [
     "node-red",

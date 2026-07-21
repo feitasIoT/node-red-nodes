@@ -181,7 +181,7 @@ module.exports = function (RED) {
     }
 
     /** Create SSH connection + interactive shell for one entry */
-    function openConnection(key, sshConfig, initialData) {
+    function openConnection(key, sshConfig, initialData, session) {
       // Create or reuse entry
       let entry = connections.get(key);
       if (!entry) {
@@ -192,12 +192,16 @@ module.exports = function (RED) {
           host: sshConfig.host,
           port: sshConfig.port,
           username: sshConfig.username,
-          password: sshConfig.password
+          password: sshConfig.password,
+          _session: session
         };
         connections.set(key, entry);
       } else {
         // Update password in case it changed
         entry.password = sshConfig.password;
+        if (session !== undefined) {
+          entry._session = session;
+        }
       }
 
       if (initialData !== undefined && initialData !== null) {
@@ -249,18 +253,22 @@ module.exports = function (RED) {
 
           stream.on('data', (data) => {
             node.status({ fill: 'green', shape: 'dot', text: `connected: ${sshConfig.host}` });
-            node.send({
+            const outMsg = {
               payload: data,
               host: sshConfig.host
-            });
+            };
+            if (entry._session) { outMsg._session = entry._session; }
+            node.send(outMsg);
           });
 
           stream.stderr.on('data', (data) => {
-            node.send({
+            const outMsg = {
               payload: data,
               host: sshConfig.host,
               stderr: true
-            });
+            };
+            if (entry._session) { outMsg._session = entry._session; }
+            node.send(outMsg);
           });
 
           // flush queued data
@@ -298,8 +306,13 @@ module.exports = function (RED) {
 
       if (!entry || !entry.conn) {
         // No active connection for this key — open one
-        openConnection(key, sshConfig, data);
+        openConnection(key, sshConfig, data, msg._session);
         return;
+      }
+
+      // Keep _session up to date on the entry
+      if (msg._session !== undefined) {
+        entry._session = msg._session;
       }
 
       // Connection exists but stream may not be ready yet
