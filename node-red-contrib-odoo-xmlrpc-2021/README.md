@@ -22,6 +22,7 @@ msg.offset = 0;
 msg.limit = 0;
 
 msg.fields = (['name', 'fiscalcode']); 
+msg.context = {"lang": "fr_FR", "active_test": false};
 
 ### update
 

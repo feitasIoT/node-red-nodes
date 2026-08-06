@@ -75,8 +75,18 @@ module.exports = function (RED) {
                   }
                 }
 
+                var context = msg.context;
+                if (isDefinedValue(context)){
+                  if (typeof context !== 'object' || Array.isArray(context) || context === null){
+                    return handle_error(new Error('When context is provided, it must be a plain object'), node, msg);
+                  }
+                }
+
                 var params = [];
-                params.push(inParams); // domain
+                params.push(inParams);
+                if (isDefinedValue(context)){
+                  params.push({context: context});
+                }
                 
                 //node.log('Search-reading for model "' + config.model + '"...');
                 // domain=None, fields=None, offset=0, limit=None, order=None
